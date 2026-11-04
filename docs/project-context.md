@@ -13,6 +13,14 @@ The PRIME Backstage Portal prototype is a frontend-only Nuxt 3 app that simulate
 - Pinia (`@pinia/nuxt`)
 - Tailwind CSS (`@nuxtjs/tailwindcss`)
 
+## Deployment
+
+The app is frontend-only and is deployed as a statically generated site. `npm run generate` writes the client bundle to `.output/public`. Nitro uses the `github-pages` preset so that directory is ready for GitHub Pages, including the SPA fallback.
+
+`.github/workflows/deploy.yml` deploys that output automatically. It runs on every push to `main` or `master`, and it can be started manually with `workflow_dispatch`. The workflow installs dependencies with `npm ci`, runs `npm run generate`, uploads `.output/public`, and publishes it with GitHub Pages.
+
+GitHub Pages project sites are served from `/<repository-name>/` rather than the domain root. Set `app.baseURL` in `nuxt.config.ts` when that applies (for example `baseURL: '/repo-name/'`).
+
 ## Architecture & Mocking Strategy
 
 The app relies on a simulated backend driven entirely by Pinia stores containing static mock data extracted from the initial HTML prototypes. Pages and components read and update that store state. They do not call a server.
@@ -45,13 +53,13 @@ Several tool views still hold their own static arrays (polls, Q&A, category clue
 
 ### Built
 
-- Nuxt 3 app shell with Pinia, Tailwind, and strict TypeScript (`nuxt.config.ts`, `app.vue`, `tailwind.config.ts`, `assets/css/main.css`).
+- Nuxt 3 app shell with Pinia, Tailwind, and strict TypeScript (`nuxt.config.ts`, `app.vue`, `tailwind.config.ts`, `assets/css/main.css`). Static generation targets `.output/public` and deploys through `.github/workflows/deploy.yml`.
 - Pinia session store with typed roles, tabs, event modes, validation, timer actions, logout, and session persistence.
 - Pinia leaderboard store with the individual player board and the team board. The view is capped at the top 50, and scores clear only through `resetFromGame`.
 - Pinia slides store. The Slide Deck tab shows one 45-slide presentation in every event mode, opening on slide 12. The slide keeps a 747:420 frame and grows to the widest size that fits the deck stage.
 - Pinia program-flow store. Program Flow is a three-page PDF reader for the same cue sheet in every event mode.
 - Pinia backstage-chat store. Backstage Chat shows one crew thread in every event mode: participant preview, role-colored bubbles, the new-messages divider, quick replies, and a composer. The signed-in name and role appear on the “You” chip. Messages the signed-in person sends stay on that shared thread.
-- Homepage (`pages/index.vue`) with four event-mode cards (`components/EventModeCard.vue`).
+- Homepage (`pages/index.vue`) with four event-mode cards (`components/EventModeCard.vue`). Only ConnectED Individual is active. Teams, Categories, and Categories Teams are disabled, marked Coming Soon, and do not start a session.
 - Activity code entry (`pages/join.vue`).
 - Role selection (`pages/role-selection.vue`, `components/RoleCard.vue`) with name and staff-code gating.
 - Shared portal shell (`layouts/portal.vue`), used by every role after onboarding: mode chip, activity code, role switcher, leave session, live countdown, and that role’s tab bar.
@@ -75,7 +83,7 @@ The leaderboard matches the individual prototype: a top-three podium and a two-c
 
 ### Pending ConnectED event modes
 
-All four modes can be selected and are stored on the session. The portal chrome labels the active mode. Mode-specific play is not finished:
+Only ConnectED Individual is active in the prototype. The homepage will not start Teams, Categories, or Categories Teams. The portal chrome still labels a mode when one is already stored. Mode-specific play is not finished:
 
 - **Individual** — individual polling is still local mock state in the poll view. The player leaderboard is in the leaderboard store.
 - **Teams** — polling knows the mode is Teams, and the leaderboard ranks teams. Team chat and the Moderator Teams Monitor are not built.

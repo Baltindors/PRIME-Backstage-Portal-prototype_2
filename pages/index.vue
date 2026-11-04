@@ -12,6 +12,7 @@ const modes: Array<{
   description: string
   features: string[]
   icon: 'person' | 'groups' | 'shapes'
+  disabled: boolean
 }> = [
   {
     mode: 'individual',
@@ -20,6 +21,7 @@ const modes: Array<{
     description: 'Standard individual polling. Each attendee answers on their own device and scores on their own.',
     features: ['Individual polls & trivia', 'Player leaderboard', 'Audience Q&A'],
     icon: 'person',
+    disabled: false,
   },
   {
     mode: 'teams',
@@ -28,6 +30,7 @@ const modes: Array<{
     description: 'Hybrid team-based gamification. Attendees join teams, chat privately and answer together.',
     features: ['Team polls, trivia & team chat', 'Team leaderboard', 'Moderator Teams Monitor'],
     icon: 'groups',
+    disabled: true,
   },
   {
     mode: 'categories',
@@ -36,6 +39,7 @@ const modes: Array<{
     description: 'Jeopardy-style individual gamification. Players pick categories and buzz in to answer.',
     features: ['Category board with point values', 'Buzz-in · wrong answers lose points', 'Individual leaderboard'],
     icon: 'shapes',
+    disabled: true,
   },
   {
     mode: 'catteams',
@@ -44,10 +48,13 @@ const modes: Array<{
     description: 'Team consensus board play. The controlling team votes on the category; every team answers together.',
     features: ['Team vote picks category & value', 'All teams answer · 50% correct rule', 'Team leaderboard & Teams Monitor'],
     icon: 'groups',
+    disabled: true,
   },
 ]
 
 function onContinue(mode: EventMode) {
+  const selected = modes.find(item => item.mode === mode)
+  if (!selected || selected.disabled) return
   session.setEventMode(mode)
   return navigateTo('/join')
 }

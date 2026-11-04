@@ -1,7 +1,12 @@
 export default defineNuxtConfig({
   ssr: false,
+  nitro: {
+    preset: 'github-pages',
+  },
   modules: ['@pinia/nuxt', '@nuxtjs/tailwindcss'],
   app: {
+    // Configure baseURL when this repository is not deployed at the root domain.
+    // Example: baseURL: '/repo-name/',
     head: {
       title: 'PRIME Backstage Portal',
       htmlAttrs: { lang: 'en' },

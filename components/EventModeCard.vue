@@ -1,14 +1,17 @@
 <script setup lang="ts">
 import type { EventMode } from '~/stores/session'
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   mode: EventMode
   title: string
   badge: string
   description: string
   features: string[]
   icon: 'person' | 'groups' | 'shapes'
-}>()
+  disabled?: boolean
+}>(), {
+  disabled: false,
+})
 
 const emit = defineEmits<{
   continue: [mode: EventMode]
@@ -65,21 +68,26 @@ const icons = {
 const tone = computed(() => tones[props.mode])
 
 function onContinue() {
+  if (props.disabled) return
   emit('continue', props.mode)
 }
 </script>
 
 <template>
   <article
-    class="group relative flex min-h-0 flex-col gap-3.5 rounded-[24px] border border-border bg-surface p-5 text-on-surface transition duration-200 hover:shadow-[0_1px_3px_rgba(0,0,0,0.3),0_4px_8px_3px_rgba(0,0,0,0.15)] active:scale-[0.99] sm:min-h-[470px] sm:p-[22px]"
-    :class="tone.card"
+    class="group relative flex min-h-0 flex-col gap-3.5 rounded-[24px] border border-border bg-surface p-5 text-on-surface transition duration-200 sm:min-h-[470px] sm:p-[22px]"
+    :class="disabled
+      ? 'cursor-not-allowed opacity-60'
+      : [tone.card, 'hover:shadow-[0_1px_3px_rgba(0,0,0,0.3),0_4px_8px_3px_rgba(0,0,0,0.15)] active:scale-[0.99]']"
+    :aria-disabled="disabled ? 'true' : undefined"
   >
     <span
+      v-if="!disabled"
       class="pointer-events-none absolute inset-0 rounded-[24px] opacity-0 transition-opacity duration-150 group-hover:opacity-[0.04] group-active:opacity-10"
       :class="tone.wash"
     />
 
-    <div class="relative flex items-center justify-between">
+    <div class="relative flex items-start justify-between gap-3">
       <span
         class="flex h-14 w-14 items-center justify-center rounded-card"
         :class="tone.icon"
@@ -88,11 +96,19 @@ function onContinue() {
           <path :d="icons[icon]" />
         </svg>
       </span>
-      <span
-        class="inline-flex h-7 items-center rounded-[14px] px-3 text-xs font-medium"
-        :class="tone.badge"
-      >
-        {{ badge }}
+      <span class="flex flex-col items-end gap-1.5">
+        <span
+          v-if="disabled"
+          class="inline-flex h-6 items-center rounded-full bg-menu px-2.5 text-[11px] font-medium tracking-[0.04em] text-muted"
+        >
+          Coming Soon
+        </span>
+        <span
+          class="inline-flex h-7 items-center rounded-[14px] px-3 text-xs font-medium"
+          :class="tone.badge"
+        >
+          {{ badge }}
+        </span>
       </span>
     </div>
 
@@ -128,10 +144,11 @@ function onContinue() {
 
     <button
       type="button"
-      class="relative mt-auto flex h-[52px] w-full items-center justify-center gap-2 rounded-pill text-[15px] font-medium focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-primary"
-      :class="tone.button"
-      :aria-label="`Continue as ${title}`"
-      @click="onContinue"
+      class="relative mt-auto flex h-[52px] w-full items-center justify-center gap-2 rounded-pill text-[15px] font-medium focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-primary disabled:cursor-not-allowed"
+      :class="disabled ? 'bg-[#E1E2EA] text-muted' : tone.button"
+      :disabled="disabled"
+      :aria-label="disabled ? `${title} is coming soon` : `Continue as ${title}`"
+      @click.stop="onContinue"
     >
       Continue
       <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
