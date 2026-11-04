@@ -30,7 +30,7 @@ const modes: Array<{
     description: 'Hybrid team-based gamification. Attendees join teams, chat privately and answer together.',
     features: ['Team polls, trivia & team chat', 'Team leaderboard', 'Moderator Teams Monitor'],
     icon: 'groups',
-    disabled: true,
+    disabled: false,
   },
   {
     mode: 'categories',
@@ -39,7 +39,7 @@ const modes: Array<{
     description: 'Jeopardy-style individual gamification. Players pick categories and buzz in to answer.',
     features: ['Category board with point values', 'Buzz-in · wrong answers lose points', 'Individual leaderboard'],
     icon: 'shapes',
-    disabled: true,
+    disabled: false,
   },
   {
     mode: 'catteams',
@@ -48,7 +48,7 @@ const modes: Array<{
     description: 'Team consensus board play. The controlling team votes on the category; every team answers together.',
     features: ['Team vote picks category & value', 'All teams answer · 50% correct rule', 'Team leaderboard & Teams Monitor'],
     icon: 'groups',
-    disabled: true,
+    disabled: false,
   },
 ]
 

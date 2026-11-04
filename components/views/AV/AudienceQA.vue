@@ -9,6 +9,26 @@ interface Question {
   text: string
 }
 
+const props = withDefaults(defineProps<{
+  variant?: 'audience' | 'faculty' | 'view'
+}>(), {
+  variant: 'audience',
+})
+
+const canModerate = computed(() => props.variant !== 'view')
+
+const sortNote = computed(() => {
+  if (props.variant === 'view') return 'View only · managed by Moderator and Faculty'
+  if (props.variant === 'faculty') return 'Sorted by most upvoted · approved by moderator'
+  return 'Sorted by most upvoted · shared live with faculty'
+})
+
+const emptyNote = computed(() => {
+  if (props.variant === 'view') return 'No new questions. Approved questions appear here for review.'
+  if (props.variant === 'faculty') return 'All caught up. New questions appear here as the moderator approves them.'
+  return 'All caught up. New audience questions appear here as they arrive.'
+})
+
 const questions = ref<Question[]>([
   { id: 1, votes: 42, mins: 2, status: 'new', text: 'How do you decide when to escalate therapy if a patient’s response plateaus after the first three months?' },
   { id: 2, votes: 31, mins: 3, status: 'new', text: 'Are there monitoring intervals you recommend specifically for older adults on this regimen?' },
@@ -57,7 +77,7 @@ function unhide(id: number) {
         <span class="inline-flex h-7 items-center rounded-lg bg-[#DAE2FF] px-2.5 text-[13px] font-medium text-[#001848]">
           {{ incoming.length }} new
         </span>
-        <span class="text-[13px] leading-4 text-muted sm:ml-auto">Sorted by most upvoted · shared live with faculty</span>
+        <span class="text-[13px] leading-4 text-muted sm:ml-auto">{{ sortNote }}</span>
       </div>
 
       <div class="flex min-h-0 flex-1 flex-col gap-3 overflow-auto px-4 pb-6 pt-1 sm:px-6">
@@ -77,7 +97,7 @@ function unhide(id: number) {
               {{ question.text }}
             </p>
             <span class="text-[13px] leading-4 text-muted">Attendee · {{ question.mins }} min ago</span>
-            <div class="mt-0.5 flex flex-wrap gap-2">
+            <div v-if="canModerate" class="mt-0.5 flex flex-wrap gap-2">
               <button type="button" class="btn-tonal" :aria-label="`Mark answered: ${question.text}`" @click="markAnswered(question.id)">
                 <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
@@ -94,7 +114,7 @@ function unhide(id: number) {
           </div>
         </article>
         <p v-if="incoming.length === 0" class="m-0 px-6 py-12 text-center text-base leading-6 text-muted">
-          All caught up. New audience questions appear here as they arrive.
+          {{ emptyNote }}
         </p>
       </div>
     </section>
@@ -152,7 +172,7 @@ function unhide(id: number) {
       <ul v-if="hiddenOpen" id="hidden-list" class="m-0 flex list-none flex-col gap-1 px-3 pb-3">
         <li v-for="question in hidden" :key="question.id" class="flex items-center gap-2 rounded-[10px] bg-[#F8F9FA] py-1.5 pl-2 pr-1">
           <span class="min-w-0 flex-1 text-sm leading-5 text-subtle">{{ question.text }}</span>
-          <button type="button" class="btn-link" :aria-label="`Unhide: ${question.text}`" @click="unhide(question.id)">
+          <button v-if="canModerate" type="button" class="btn-link" :aria-label="`Unhide: ${question.text}`" @click="unhide(question.id)">
             Unhide
           </button>
         </li>

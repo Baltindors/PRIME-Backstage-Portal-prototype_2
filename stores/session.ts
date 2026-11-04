@@ -11,11 +11,14 @@ export type TabId =
   | 'active-qa'
   | 'leaderboard'
   | 'trivia-polls'
+  | 'faculty-polls'
   | 'backstage-chat'
   | 'live-question'
   | 'rationale'
   | 'speaker-timer'
   | 'audience-analytics'
+  | 'attendees'
+  | 'event-notes'
 
 export type TabLayout = 'single' | 'split' | 'aside'
 
@@ -46,6 +49,8 @@ export interface Role {
 const ACTIVITY_CODE = '123LV26'
 const STAFF_CODE = '4747'
 const STAFF_ROLE_IDS: RoleId[] = ['av-tech', 'program-manager']
+const STAGE_ROLE_IDS: RoleId[] = ['av-tech', 'moderator', 'faculty']
+const STAGE_TIMER_SECONDS = 44 * 60 + 39
 
 export const TABS: Record<TabId, TabConfig> = {
   'program-flow': { label: 'Program Flow', view: { w: ['cue'], layout: 'single' } },
@@ -55,15 +60,16 @@ export const TABS: Record<TabId, TabConfig> = {
   'active-qa': { label: 'Active Q&A', view: { w: ['queue', 'approved'], layout: 'aside' } },
   'leaderboard': { label: 'Leaderboard', view: { w: ['leaderboard'], layout: 'single' } },
   'trivia-polls': { label: 'Trivia Polls', view: { w: ['trivia'], layout: 'single' } },
+  'faculty-polls': { label: 'Polling Questions (View)', view: { w: ['polls'], layout: 'single' } },
   'backstage-chat': { label: 'Backstage Chat', view: { w: ['chat'], layout: 'single' } },
   'live-question': { label: 'Live Question', view: { w: ['question'], layout: 'single' } },
   'rationale': { label: 'Rationale & Citations', view: { w: ['rationale', 'citations'], layout: 'aside' } },
   'speaker-timer': { label: 'Speaker Timer', view: { w: ['speaker'], layout: 'single' } },
   'audience-analytics': { label: 'Audience Analytics', view: { w: ['analytics'], layout: 'single' } },
   'master-timers': { label: 'Master Stage Timers', view: { w: ['countdown'], layout: 'single' } },
+  attendees: { label: 'Attendee Management', view: { w: ['roster'], layout: 'single' } },
+  'event-notes': { label: 'Event Notes & Reporting', view: { w: ['notes'], layout: 'single' } },
 }
-
-const ALL_TABS = Object.keys(TABS) as TabId[]
 
 export const ROLES: Role[] = [
   {
@@ -88,37 +94,53 @@ export const ROLES: Role[] = [
     id: 'moderator',
     title: 'Session Moderator',
     short: 'Moderator',
-    desc: 'Run live polls and trivia, triage audience Q&A and manage the leaderboard.',
-    toolsLine: 'Audience Q&A · Polling control · Leaderboard · Slides · Flow · Chat',
+    desc: 'Run audience Q&A, polls, the leaderboard, slides, program flow, and backstage chat. The stage clock follows the AV timer.',
+    toolsLine: 'Audience Q&A · Polling · Leaderboard · Slides · Flow · Chat',
     toolCount: 6,
-    tabs: ['active-qa', 'trivia-polls', 'backstage-chat'],
+    tabs: ['poll-triggers', 'active-qa', 'leaderboard', 'slide-deck', 'program-flow', 'backstage-chat'],
     def: 'active-qa',
     over: {},
     tabLabels: {
-      'trivia-polls': 'Polling & Gamification (Active Control)',
+      'poll-triggers': 'Polling & Gamification (Active Control)',
+      'active-qa': 'Audience Q&A',
+    },
+    badges: {
+      'backstage-chat': 3,
     },
   },
   {
     id: 'faculty',
     title: 'Medical Faculty / Speaker',
     short: 'Faculty',
-    desc: 'Answer audience questions, review polls and follow the run of show.',
+    desc: 'Answer audience questions, review polls in view-only mode, and follow the slides, program flow, and backstage chat.',
     toolsLine: 'Faculty Q&A · Polling (view) · Slides · Program Flow · Chat',
     toolCount: 5,
-    tabs: ['live-question', 'rationale', 'speaker-timer'],
+    tabs: ['live-question', 'faculty-polls', 'slide-deck', 'program-flow', 'backstage-chat'],
     def: 'live-question',
-    over: { 'live-question': { w: ['question', 'rationale'], layout: 'split' } },
+    over: {},
+    tabLabels: {
+      'live-question': 'Faculty Q&A',
+    },
+    badges: {
+      'backstage-chat': 3,
+    },
   },
   {
     id: 'program-manager',
     title: 'CME Program Manager',
     short: 'Program Manager',
-    desc: 'Manage attendees, take event notes, send the end-of-program report and view every tool.',
+    desc: 'Manage attendees, take event notes, send the end-of-program report, and review faculty Q&A, polls, slides, program flow, and backstage chat.',
     toolsLine: 'Attendees · Notes & Reporting · Q&A · Polls · Slides · Flow · Chat',
     toolCount: 7,
-    tabs: [...ALL_TABS],
-    def: 'program-flow',
-    over: { 'program-flow': { w: ['cue', 'chat'], layout: 'split' } },
+    tabs: ['attendees', 'event-notes', 'live-question', 'faculty-polls', 'slide-deck', 'program-flow', 'backstage-chat'],
+    def: 'attendees',
+    over: {},
+    tabLabels: {
+      'live-question': 'Faculty Q&A (View)',
+    },
+    badges: {
+      'backstage-chat': 3,
+    },
   },
 ]
 
@@ -181,9 +203,13 @@ function readPersistedSession(): PersistedSession | null {
   }
 }
 
+function isStageRole(roleId: RoleId) {
+  return STAGE_ROLE_IDS.includes(roleId)
+}
+
 function timerFor(roleId: RoleId) {
   if (roleId === 'faculty') return 1200
-  if (roleId === 'av-tech') return 44 * 60 + 39
+  if (isStageRole(roleId)) return STAGE_TIMER_SECONDS
   return 300
 }
 
@@ -209,6 +235,10 @@ export const useSessionStore = defineStore('session', () => {
     return accepted
   }
 
+  function matchesStaffCode(code: string) {
+    return code === STAFF_CODE
+  }
+
   function setRoleAndUser(roleId: string, name: string, code: string) {
     const role = findRole(roleId)
     const trimmedName = name.trim()
@@ -217,12 +247,17 @@ export const useSessionStore = defineStore('session', () => {
       return false
     }
 
+    const previousRoleId = selectedRole.value?.id ?? null
+    const keepStageClock = previousRoleId !== null && isStageRole(previousRoleId) && isStageRole(role.id)
+
     selectedRole.value = role
     userName.value = trimmedName
     staffCode.value = code
-    sessionLive.value = false
-    sessionTimer.value = timerFor(role.id)
-    timerPaused.value = false
+    if (!keepStageClock) {
+      sessionLive.value = false
+      sessionTimer.value = timerFor(role.id)
+      timerPaused.value = false
+    }
     activeTab.value = role.def
     return true
   }
@@ -289,6 +324,7 @@ export const useSessionStore = defineStore('session', () => {
     activeTab,
     setEventMode,
     validateActivityCode,
+    matchesStaffCode,
     setRoleAndUser,
     adjustSessionTimer,
     setTimerPaused,

@@ -25,7 +25,7 @@ GitHub Pages project sites are served from `/<repository-name>/` rather than the
 
 The app relies on a simulated backend driven entirely by Pinia stores containing static mock data extracted from the initial HTML prototypes. Pages and components read and update that store state. They do not call a server.
 
-`stores/session.ts` (`useSessionStore`) owns the global session: event mode, activity code, selected role, user name, staff code, live flag, session timer, pause state, and active tab. The store persists to `sessionStorage` under `prime-portal-session` and restores on load.
+`stores/session.ts` (`useSessionStore`) owns the global session: event mode, activity code, selected role, user name, staff code, live flag, session timer, pause state, and active tab. The store persists to `sessionStorage` under `prime-portal-session` and restores on load. AV Tech, the Moderator, and Faculty share one stage countdown. Switching between those roles keeps the running time, the pause state, and the live flag. That clock starts at 44:39, and the AV Master Stage Timers tab is what changes it.
 
 `stores/slides.ts` (`useSlidesStore`) owns the live slide index for the shared deck. The same 45-slide presentation is shown in every event mode. Refreshing the page restores slide 12.
 
@@ -34,6 +34,10 @@ The app relies on a simulated backend driven entirely by Pinia stores containing
 `stores/backstageChat.ts` (`useBackstageChatStore`) owns the shared crew thread: the transcript, the participant preview, and quick replies. The same chat is shown in every event mode. A sent message is kept until a full page reload restores the mock transcript.
 
 `stores/leaderboard.ts` (`useLeaderboardStore`) owns the mocked standings. Individual and Categories modes share the player board. Teams and Categories Teams share the team board. The view shows at most the top 50 scored entries. There is no leaderboard reset control. `resetFromGame(mode)` is the only way to clear a board, and it runs when that mode’s game is reset. Resetting a poll question does not clear scores. A full page reload restores the mock snapshot.
+
+`stores/attendees.ts` (`useAttendeesStore`) owns the Program Manager roster. It starts from a ten-person mock list. Sending a registration link adds an Invite Sent row. Checking someone in from the kiosk or the phone page adds a Registered row. The roster is kept in `localStorage` under `prime-portal-attendees`, so a check-in opened from the QR code in another tab appears on the live roster. Clearing that key restores the mock list on the next load.
+
+`stores/eventNotes.ts` (`useEventNotesStore`) owns Program Manager session notes. It starts from three seeded observations. Edits are kept in `localStorage` under `prime-portal-event-notes`, including the timestamp of the last save. Quick-add tags append a timestamped line that uses the signed-in name. Beautify with AI rewrites the current notes in the browser into a report: a summary, sections for technical issues, engagement, and faculty feedback, and any follow-ups. There is no network call. Editing the raw notes clears that report. A full page reload restores the saved notes and drops the generated report.
 
 Accepted mock credentials:
 
@@ -59,7 +63,7 @@ Several tool views still hold their own static arrays (polls, Q&A, category clue
 - Pinia slides store. The Slide Deck tab shows one 45-slide presentation in every event mode, opening on slide 12. The slide keeps a 747:420 frame and grows to the widest size that fits the deck stage.
 - Pinia program-flow store. Program Flow is a three-page PDF reader for the same cue sheet in every event mode.
 - Pinia backstage-chat store. Backstage Chat shows one crew thread in every event mode: participant preview, role-colored bubbles, the new-messages divider, quick replies, and a composer. The signed-in name and role appear on the “You” chip. Messages the signed-in person sends stay on that shared thread.
-- Homepage (`pages/index.vue`) with four event-mode cards (`components/EventModeCard.vue`). Only ConnectED Individual is active. Teams, Categories, and Categories Teams are disabled, marked Coming Soon, and do not start a session.
+- Homepage (`pages/index.vue`) with four event-mode cards (`components/EventModeCard.vue`). Individual, Teams, Categories, and Categories Teams each start a session.
 - Activity code entry (`pages/join.vue`).
 - Role selection (`pages/role-selection.vue`, `components/RoleCard.vue`) with name and staff-code gating.
 - Shared portal shell (`layouts/portal.vue`), used by every role after onboarding: mode chip, activity code, role switcher, leave session, live countdown, and that role’s tab bar.
@@ -79,11 +83,23 @@ AV Tech tabs and the views that render them:
 
 The leaderboard matches the individual prototype: a top-three podium and a two-column list of the remaining ranks (`components/LeaderboardPodiumCard.vue`, `components/LeaderboardStandingRow.vue`). Individual mode reads “Top players” and is capped at 50 of the 214 scored players. Teams mode reads “Top teams” and ranks the nine onsite and virtual teams. Categories uses the player board. Categories Teams uses the team board.
 
-`PollingControl.vue` also covers the Moderator trivia-polls tab and already branches on Teams versus Categories modes. `components/views/CategoriesGame.vue` renders the `game-board` tab. Program Manager is assigned every tab, so that board is reachable from that role. AV Tech’s tab list does not include it.
+The Moderator uses the same Polling & Gamification, Audience Q&A, Leaderboard, Slide Deck, Program Flow, and Backstage Chat tabs as AV Tech, in that order, without the Master Stage Timers control. `PollingControl.vue` renders that shared polling tab and already branches on Teams versus Categories modes. Faculty uses Faculty Q&A (`AudienceQA.vue`), a view-only poll preview (`components/views/Faculty/FacultyPolls.vue`), and the same Slide Deck, Program Flow, and Backstage Chat views. On tablet and desktop the poll list takes one third of the row and the question takes the other two thirds. On a phone the list opens as a menu from the left. `components/views/CategoriesGame.vue` renders the `game-board` tab. No current role includes that tab.
+
+CME Program Manager tabs and the views that render them. Attendee Management opens by default. Backstage Chat shows a red badge of 3. This same set is used in every event mode.
+
+| Tab | View |
+| --- | --- |
+| Attendee Management | `components/views/PM/AttendeeManagement.vue` — roster, quick registration, and full-screen kiosk |
+| Event Notes & Reporting | `components/views/PM/EventNotes.vue` — session notes (`SessionNotes.vue`), Beautify with AI, and the end-of-program package (`ProgramReport.vue`) |
+| Faculty Q&A (View) | `components/views/AV/AudienceQA.vue` with `variant="view"` |
+| Polling Questions (View) | `components/views/Faculty/FacultyPolls.vue` |
+| Slide Deck | `components/views/AV/SlideDeck.vue` |
+| Program Flow | `components/views/AV/ProgramFlow.vue` |
+| Backstage Chat | `components/views/AV/BackstageChat.vue` |
 
 ### Pending ConnectED event modes
 
-Only ConnectED Individual is active in the prototype. The homepage will not start Teams, Categories, or Categories Teams. The portal chrome still labels a mode when one is already stored. Mode-specific play is not finished:
+All four ConnectED modes can be selected from the homepage and continue through the activity code, role selection, and the portal. Mode-specific play is not finished:
 
 - **Individual** — individual polling is still local mock state in the poll view. The player leaderboard is in the leaderboard store.
 - **Teams** — polling knows the mode is Teams, and the leaderboard ranks teams. Team chat and the Moderator Teams Monitor are not built.
@@ -95,18 +111,18 @@ Only ConnectED Individual is active in the prototype. The homepage will not star
 Role definitions, default tabs, labels, and layout overrides live in `stores/session.ts`. The portal does not yet apply `TabView` split or aside layouts.
 
 - **AV Tech** — tab set and views above are in place. Timer controls write to the session store.
-- **Moderator** — Active Q&A, Polling & Gamification, and Backstage Chat reuse the AV views. Teams Monitor is not built.
-- **Faculty** — Live Question, Rationale & Citations, and Speaker Timer have no views. Opening those tabs renders an empty panel.
-- **Program Manager** — sees every defined tab, including Faculty and analytics tabs that have no view. Attendees, notes, and end-of-program reporting are not built. Audience Analytics has no view.
+- **Moderator** — Audience Q&A, Polling & Gamification, Leaderboard, Slide Deck, Program Flow, and Backstage Chat are the same tabs and views as AV Tech. The header countdown stays on the AV stage timer. Teams Monitor is not built.
+- **Faculty** — Faculty Q&A, view-only Polling Questions, Slide Deck, Program Flow, and Backstage Chat. Slide Deck, Program Flow, and Backstage Chat are the same views as AV Tech and the Moderator. Polling has no launch, stop, or reset controls. The header countdown uses the same stage timer. Rationale & Citations and Speaker Timer still have no views.
+- **Program Manager** — Attendee Management is the live roster and quick registration. Full-screen self check-in is a split screen: the walk-in form on one side, and a QR code for phone check-in on the other. Leaving the kiosk requires staff code `4747`. Phone check-in is `pages/walk-in.vue`. Event Notes & Reporting is the session log and the end-of-program package. Notes autosave locally. Quick add inserts a Faculty feedback, Tech issue, or Engagement line. Beautify with AI turns the raw log into the report version included when Event Notes is checked. The package itself is a simulated send to one email address. Faculty Q&A is view-only. Polling Questions, Slide Deck, Program Flow, and Backstage Chat reuse the existing views. Audience Analytics is not on this role.
 
 ## Key Terminology
 
 ### Roles
 
 - **AV Tech** (`av-tech`) — AV Tech / Stage Producer. Runs the master stage timers, polling, audience Q&A, the leaderboard, slides, program flow, and backstage chat.
-- **Moderator** (`moderator`) — Session Moderator. Triages audience Q&A, runs polls and trivia, and uses backstage chat. Teams mode adds a Teams Monitor.
-- **Faculty** (`faculty`) — Medical Faculty / Speaker. Answers the live audience question, reviews rationale and citations, and follows a speaker timer.
-- **Program Manager** (`program-manager`) — CME Program Manager. Oversees attendees, notes, and reporting, and can view every tool.
+- **Moderator** (`moderator`) — Session Moderator. Uses the same audience Q&A, polling, leaderboard, slides, program flow, and backstage chat as AV Tech. The header countdown follows the AV stage timer. Teams mode adds a Teams Monitor.
+- **Faculty** (`faculty`) — Medical Faculty / Speaker. Answers faculty Q&A, reviews polling questions in view-only mode, and uses the same slide deck, program flow, backstage chat, and stage countdown as AV Tech and the Moderator.
+- **Program Manager** (`program-manager`) — CME Program Manager. Opens on Attendee Management (roster, registration, and kiosk check-in), then Event Notes & Reporting, view-only Faculty Q&A, view-only Polling Questions, and the same Slide Deck, Program Flow, and Backstage Chat as AV Tech.
 
 ### Event modes
 
