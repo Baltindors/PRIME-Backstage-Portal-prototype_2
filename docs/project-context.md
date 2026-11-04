@@ -19,7 +19,7 @@ The app is frontend-only and is deployed as a statically generated site. `npm ru
 
 `.github/workflows/deploy.yml` deploys that output automatically. It runs on every push to `main` or `master`, and it can be started manually with `workflow_dispatch`. The workflow installs dependencies with `npm ci`, runs `npm run generate`, uploads `.output/public`, and publishes it with GitHub Pages.
 
-GitHub Pages project sites are served from `/<repository-name>/` rather than the domain root. Set `app.baseURL` in `nuxt.config.ts` when that applies (for example `baseURL: '/repo-name/'`).
+GitHub Pages project sites are served from `/<repository-name>/` rather than the domain root. `app.baseURL` in `nuxt.config.ts` is configured to `'/PRIME-Backstage-Portal-prototype_2/'` so that all static assets and router links include the subfolder prefix.
 
 ## Architecture & Mocking Strategy
 
