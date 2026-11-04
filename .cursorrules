@@ -1,0 +1,40 @@
+# PRIME Backstage Portal
+
+Strict guidelines for this Nuxt 3 prototype. Read `docs/project-context.md` before changing code.
+
+## Tech Stack & Standards
+
+- Use the Vue 3 Composition API with `<script setup lang="ts">`.
+- Use strictly typed TypeScript. Do not use `any`. Type props, emits, store state, and mock records.
+- Rely on Nuxt 3 auto-imports for composables, components, and utilities (`ref`, `computed`, `useSessionStore`, `navigateTo`). Use explicit imports only for types (`import type`).
+- Style with Tailwind CSS utility classes. Do not add a second styling system or new global CSS unless a utility cannot express the rule.
+
+```vue
+<script setup lang="ts">
+const session = useSessionStore()
+</script>
+```
+
+## State Management
+
+- Use Pinia exclusively for application state and all mocked backend data.
+- Do not keep global concepts in local component state. That includes user roles, the signed-in user, activity codes, event modes, session timers, and the active portal tab.
+- Local `ref` or `reactive` state is only for view-local UI, such as an unsubmitted input or an expanded panel.
+
+```ts
+// Global session facts belong in the store.
+session.setEventMode('teams')
+
+// A draft the user has not submitted may stay local.
+const draft = ref('')
+```
+
+## Component Structure
+
+- Break complex views into small, reusable components in `/components`.
+- Keep pages thin: route, read the store, and compose components.
+- Put role-specific tool views under `/components/views`.
+
+## Continuous Documentation
+
+Before beginning any new task, you must read `docs/project-context.md` to understand the current state. Upon completing any architectural change, new page, or state modification, you MUST update `docs/project-context.md` to reflect the changes.

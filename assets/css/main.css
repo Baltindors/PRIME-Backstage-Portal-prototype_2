@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-background: #f8f9fa;
+  --color-surface: #ffffff;
+  --color-on-surface: #1a1c1e;
+  --color-muted: #44474e;
+  --color-subtle: #5d6066;
+  --color-outline: #74777f;
+  --color-primary: #0a56d0;
+  --color-primary-hover: #08439f;
+  --color-primary-pressed: #0849b3;
+  --color-selected: #dae2ff;
+  --color-icon-container: #dce2f9;
+  --color-on-selected: #001848;
+  --color-border: #c4c6d0;
+  --color-divider: #e1e2ea;
+  --color-menu: #eceef2;
+  --color-hover-fill: #f2f3f7;
+  --color-error: #ba1a1a;
+  --color-live: #ffddb3;
+  --color-on-live: #4a2800;
+  --color-correct: #b7f1b9;
+  --color-on-correct: #002107;
+  --radius-field: 8px;
+  --radius-card: 16px;
+  --radius-pill: 9999px;
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 1px 3px 1px rgba(0, 0, 0, 0.15);
+  --shadow-menu: 0 2px 6px 2px rgba(0, 0, 0, 0.15), 0 1px 2px rgba(0, 0, 0, 0.3);
+  --font-sans: 'Google Sans', 'Google Sans Text', 'Product Sans', system-ui, sans-serif;
+}
+
+body {
+  margin: 0;
+  background: var(--color-background);
+  color: var(--color-on-surface);
+  font-family: var(--font-sans);
+}

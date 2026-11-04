@@ -1,0 +1,529 @@
+{
+  "v": 3,
+  "attachments": {},
+  "boards": {
+    "AV-Chat.dc.html": {
+      "h": 834,
+      "is_interactive": true,
+      "page": "av",
+      "title": "7 · Backstage Chat",
+      "w": 1194,
+      "x": 7644,
+      "y": 0
+    },
+    "AV-Flow.dc.html": {
+      "h": 834,
+      "is_interactive": true,
+      "page": "av",
+      "title": "6 · Program Flow (pre-session timer state)",
+      "w": 1194,
+      "x": 6370,
+      "y": 0
+    },
+    "AV-Leaderboard.dc.html": {
+      "h": 834,
+      "is_interactive": true,
+      "page": "av",
+      "title": "4 · Leaderboard (ConnectED Individual)",
+      "w": 1194,
+      "x": 3822,
+      "y": 0
+    },
+    "AV-Polls.dc.html": {
+      "h": 834,
+      "is_interactive": true,
+      "page": "av",
+      "title": "2 · Polling & Gamification (Active Control)",
+      "w": 1194,
+      "x": 1274,
+      "y": 0
+    },
+    "AV-QA.dc.html": {
+      "h": 834,
+      "is_interactive": true,
+      "page": "av",
+      "title": "3 · Audience Q&A",
+      "w": 1194,
+      "x": 2548,
+      "y": 0
+    },
+    "AV-Slides.dc.html": {
+      "h": 834,
+      "is_interactive": true,
+      "page": "av",
+      "title": "5 · Slide Deck",
+      "w": 1194,
+      "x": 5096,
+      "y": 0
+    },
+    "AV-Teams.dc.html": {
+      "h": 834,
+      "is_interactive": true,
+      "page": "av",
+      "title": "8 · Teams Monitor (ConnectED Teams & Categories Teams)",
+      "w": 1194,
+      "x": 8918,
+      "y": 0
+    },
+    "AV-TeamsLeaderboard.dc.html": {
+      "h": 834,
+      "is_interactive": true,
+      "page": "av",
+      "title": "9 · Leaderboard · Team & Individual Rankings (ConnectED Teams)",
+      "w": 1194,
+      "x": 10192,
+      "y": 0
+    },
+    "AV-Timers.dc.html": {
+      "h": 834,
+      "is_interactive": true,
+      "page": "av",
+      "title": "1 · Master Stage Timers (New) · lands here",
+      "w": 1194,
+      "x": 0,
+      "y": 0
+    },
+    "Artboard-9swn.dc.html": {
+      "h": 834,
+      "is_interactive": true,
+      "page": "page-z941mi",
+      "title": "Role Selection → Command Center · 1194×834",
+      "w": 1194,
+      "x": 0,
+      "y": 0
+    },
+    "EventMode.dc.html": {
+      "h": 834,
+      "is_interactive": true,
+      "page": "page-1",
+      "title": "START HERE · 1 · Select Event Mode",
+      "w": 1194,
+      "x": -175,
+      "y": 0
+    },
+    "Faculty-Chat.dc.html": {
+      "h": 834,
+      "is_interactive": true,
+      "page": "faculty",
+      "title": "5 · Backstage Chat",
+      "w": 1194,
+      "x": 5096,
+      "y": 0
+    },
+    "Faculty-Flow.dc.html": {
+      "h": 834,
+      "is_interactive": true,
+      "page": "faculty",
+      "title": "4 · Program Flow (pre-session timer state)",
+      "w": 1194,
+      "x": 3822,
+      "y": 0
+    },
+    "Faculty-Polls.dc.html": {
+      "h": 834,
+      "is_interactive": true,
+      "page": "faculty",
+      "title": "2 · Polling Questions (View only)",
+      "w": 1194,
+      "x": 1274,
+      "y": 0
+    },
+    "Faculty-QA.dc.html": {
+      "h": 834,
+      "is_interactive": true,
+      "page": "faculty",
+      "title": "1 · Faculty Q&A",
+      "w": 1194,
+      "x": 0,
+      "y": 0
+    },
+    "Faculty-Slides.dc.html": {
+      "h": 834,
+      "is_interactive": true,
+      "page": "faculty",
+      "title": "3 · Slide Deck",
+      "w": 1194,
+      "x": 2548,
+      "y": 0
+    },
+    "Main.dc.html": {
+      "h": 834,
+      "is_interactive": true,
+      "title": "2 · Moderator Access (code 123LV26, same for every event mode)",
+      "w": 1194,
+      "x": 1274,
+      "y": 0
+    },
+    "Mod-Chat.dc.html": {
+      "h": 834,
+      "is_interactive": true,
+      "page": "moderator",
+      "title": "6 · Backstage Chat",
+      "w": 1194,
+      "x": 6370,
+      "y": 0
+    },
+    "Mod-Flow.dc.html": {
+      "h": 834,
+      "is_interactive": true,
+      "page": "moderator",
+      "title": "5 · Program Flow (pre-session timer state)",
+      "w": 1194,
+      "x": 5096,
+      "y": 0
+    },
+    "Mod-Leaderboard.dc.html": {
+      "h": 834,
+      "is_interactive": true,
+      "page": "moderator",
+      "title": "3 · Leaderboard (ConnectED Individual)",
+      "w": 1194,
+      "x": 2548,
+      "y": 0
+    },
+    "Mod-Polls.dc.html": {
+      "h": 834,
+      "is_interactive": true,
+      "page": "moderator",
+      "title": "2 · Polling & Gamification (Active Control) · lands here",
+      "w": 1194,
+      "x": 1274,
+      "y": 0
+    },
+    "Mod-QA.dc.html": {
+      "h": 834,
+      "is_interactive": true,
+      "page": "moderator",
+      "title": "1 · Audience Q&A",
+      "w": 1194,
+      "x": 0,
+      "y": 0
+    },
+    "Mod-Slides.dc.html": {
+      "h": 834,
+      "is_interactive": true,
+      "page": "moderator",
+      "title": "4 · Slide Deck",
+      "w": 1194,
+      "x": 3822,
+      "y": 0
+    },
+    "Mod-TeamsLeaderboard.dc.html": {
+      "h": 834,
+      "is_interactive": true,
+      "page": "moderator",
+      "title": "7 · Leaderboard · Team & Individual Rankings (ConnectED Teams)",
+      "w": 1194,
+      "x": 7644,
+      "y": 0
+    },
+    "PM-Attendees.dc.html": {
+      "h": 834,
+      "is_interactive": true,
+      "page": "pm",
+      "title": "1 · Attendee Management (pre-session timer) · lands here",
+      "w": 1194,
+      "x": 0,
+      "y": 0
+    },
+    "PM-Chat.dc.html": {
+      "h": 834,
+      "is_interactive": true,
+      "page": "pm",
+      "title": "7 · Backstage Chat",
+      "w": 1194,
+      "x": 7644,
+      "y": 0
+    },
+    "PM-Floorplan.dc.html": {
+      "h": 834,
+      "is_interactive": true,
+      "page": "pm",
+      "title": "8b · Roster & Floorplan › Floorplan & Table Assignments (both Teams modes) · lands here in Teams modes",
+      "w": 1194,
+      "x": 10192,
+      "y": 0
+    },
+    "PM-Flow.dc.html": {
+      "h": 834,
+      "is_interactive": true,
+      "page": "pm",
+      "title": "6 · Program Flow",
+      "w": 1194,
+      "x": 6370,
+      "y": 0
+    },
+    "PM-Notes.dc.html": {
+      "h": 834,
+      "is_interactive": true,
+      "page": "pm",
+      "title": "2 · Event Notes & Reporting (New)",
+      "w": 1194,
+      "x": 1274,
+      "y": 0
+    },
+    "PM-Polls.dc.html": {
+      "h": 834,
+      "is_interactive": true,
+      "page": "pm",
+      "title": "4 · Polling Questions (View)",
+      "w": 1194,
+      "x": 3822,
+      "y": 0
+    },
+    "PM-QA.dc.html": {
+      "h": 834,
+      "is_interactive": true,
+      "page": "pm",
+      "title": "3 · Faculty Q&A (View)",
+      "w": 1194,
+      "x": 2548,
+      "y": 0
+    },
+    "PM-Slides.dc.html": {
+      "h": 834,
+      "is_interactive": true,
+      "page": "pm",
+      "title": "5 · Slide Deck",
+      "w": 1194,
+      "x": 5096,
+      "y": 0
+    },
+    "PM-Teams.dc.html": {
+      "h": 834,
+      "is_interactive": true,
+      "page": "pm",
+      "title": "9 · Teams Monitor (ConnectED Teams & Categories Teams)",
+      "w": 1194,
+      "x": 11466,
+      "y": 0
+    },
+    "Piece-dvu9.dc.html": {
+      "frameless": true,
+      "h": 257,
+      "title": "Box",
+      "w": 319,
+      "x": 1360,
+      "y": 944
+    },
+    "PM-TeamsAttendees.dc.html": {
+      "x": 8918,
+      "y": 0,
+      "w": 1194,
+      "h": 834,
+      "page": "pm",
+      "title": "8a · Roster & Floorplan › Attendees & Registration (both Teams modes)",
+      "is_interactive": true
+    },
+    "Mod-CatLeaderboard.dc.html": {
+      "x": 8918,
+      "y": 0,
+      "w": 1194,
+      "h": 834,
+      "page": "moderator",
+      "title": "8 · Leaderboard (ConnectED Categories – buzzer scoring)",
+      "is_interactive": true
+    },
+    "AV-CatLeaderboard.dc.html": {
+      "x": 11466,
+      "y": 0,
+      "w": 1194,
+      "h": 834,
+      "page": "av",
+      "title": "10 · Leaderboard (ConnectED Categories – buzzer scoring)",
+      "is_interactive": true
+    },
+    "Mod-CatGame.dc.html": {
+      "x": 10192,
+      "y": 0,
+      "w": 1194,
+      "h": 834,
+      "page": "moderator",
+      "title": "9 · Categories Game Control (ConnectED Categories) · lands here in Categories",
+      "is_interactive": true
+    },
+    "Faculty-CatView.dc.html": {
+      "x": 6370,
+      "y": 0,
+      "w": 1194,
+      "h": 834,
+      "page": "faculty",
+      "title": "6 · Categories (View) · both Categories modes",
+      "is_interactive": true
+    },
+    "AV-CatGame.dc.html": {
+      "x": 12740,
+      "y": 0,
+      "w": 1194,
+      "h": 834,
+      "page": "av",
+      "title": "11 · Categories Game Control (ConnectED Categories)",
+      "is_interactive": true
+    },
+    "Mod-TeamCatGame.dc.html": {
+      "x": 11466,
+      "y": 0,
+      "w": 1194,
+      "h": 834,
+      "page": "moderator",
+      "title": "10 · Team Categories Control (ConnectED Categories Teams) · lands here",
+      "is_interactive": true
+    },
+    "Mod-TeamsMonitor.dc.html": {
+      "x": 12740,
+      "y": 0,
+      "w": 1194,
+      "h": 834,
+      "page": "moderator",
+      "title": "11 · Teams Monitor (ConnectED Categories Teams)",
+      "is_interactive": true
+    },
+    "Mod-TeamCatLeaderboard.dc.html": {
+      "x": 14014,
+      "y": 0,
+      "w": 1194,
+      "h": 834,
+      "page": "moderator",
+      "title": "12 · Leaderboard · Team Rankings, 50% rule (ConnectED Categories Teams)",
+      "is_interactive": true
+    },
+    "AV-TeamCatGame.dc.html": {
+      "x": 14014,
+      "y": 0,
+      "w": 1194,
+      "h": 834,
+      "page": "av",
+      "title": "12 · Team Categories Control (ConnectED Categories Teams)",
+      "is_interactive": true
+    },
+    "AV-TeamCatLeaderboard.dc.html": {
+      "x": 15288,
+      "y": 0,
+      "w": 1194,
+      "h": 834,
+      "page": "av",
+      "title": "13 · Leaderboard · Team Rankings, 50% rule (ConnectED Categories Teams)",
+      "is_interactive": true
+    }
+  },
+  "createdOnFiles": {
+    "at": "2026-10-15T14:00:00Z",
+    "v": 1
+  },
+  "designSystems": [],
+  "launch": {
+    "view": "canvas"
+  },
+  "notes": {
+    "avTitle": {
+      "kind": "title1",
+      "maxW": 8000,
+      "page": "av",
+      "text": "AV Tech / Stage Producer Workspace · Tablet landscape",
+      "w": 240,
+      "x": 0,
+      "y": -300
+    },
+    "facultyTitle": {
+      "kind": "title1",
+      "maxW": 6290,
+      "page": "faculty",
+      "text": "Faculty / Speaker Workspace · Tablet landscape",
+      "w": 240,
+      "x": 0,
+      "y": -300
+    },
+    "modTitle": {
+      "kind": "title1",
+      "maxW": 8000,
+      "page": "moderator",
+      "text": "Session Moderator Workspace · Tablet landscape",
+      "w": 240,
+      "x": 0,
+      "y": -300
+    },
+    "pmTitle": {
+      "kind": "title1",
+      "maxW": 8000,
+      "page": "pm",
+      "text": "CME Program Manager Workspace · Tablet landscape",
+      "w": 240,
+      "x": 0,
+      "y": -300
+    }
+  },
+  "order": [
+    "Artboard-9swn.dc.html",
+    "Faculty-QA.dc.html",
+    "Faculty-Polls.dc.html",
+    "Faculty-Slides.dc.html",
+    "Faculty-Flow.dc.html",
+    "Faculty-Chat.dc.html",
+    "Faculty-CatView.dc.html",
+    "Mod-QA.dc.html",
+    "Mod-Polls.dc.html",
+    "Mod-Leaderboard.dc.html",
+    "Mod-Slides.dc.html",
+    "Mod-Flow.dc.html",
+    "Mod-Chat.dc.html",
+    "Mod-TeamsLeaderboard.dc.html",
+    "Mod-CatLeaderboard.dc.html",
+    "Mod-CatGame.dc.html",
+    "Mod-TeamCatGame.dc.html",
+    "Mod-TeamsMonitor.dc.html",
+    "Mod-TeamCatLeaderboard.dc.html",
+    "PM-Attendees.dc.html",
+    "PM-Notes.dc.html",
+    "PM-QA.dc.html",
+    "PM-Polls.dc.html",
+    "PM-Slides.dc.html",
+    "PM-Flow.dc.html",
+    "PM-Chat.dc.html",
+    "PM-TeamsAttendees.dc.html",
+    "PM-Floorplan.dc.html",
+    "PM-Teams.dc.html",
+    "AV-Timers.dc.html",
+    "AV-Polls.dc.html",
+    "AV-QA.dc.html",
+    "AV-Leaderboard.dc.html",
+    "AV-Slides.dc.html",
+    "AV-Flow.dc.html",
+    "AV-Chat.dc.html",
+    "AV-Teams.dc.html",
+    "AV-TeamsLeaderboard.dc.html",
+    "AV-CatLeaderboard.dc.html",
+    "AV-CatGame.dc.html",
+    "AV-TeamCatGame.dc.html",
+    "AV-TeamCatLeaderboard.dc.html",
+    "EventMode.dc.html",
+    "Main.dc.html",
+    "Piece-dvu9.dc.html"
+  ],
+  "pages": [
+    {
+      "id": "page-1",
+      "name": "1 · Event Type & Code Entry"
+    },
+    {
+      "id": "page-z941mi",
+      "name": "2 · Role Selection"
+    },
+    {
+      "id": "faculty",
+      "name": "3 · Faculty Workspace"
+    },
+    {
+      "id": "moderator",
+      "name": "4 · Moderator Workspace"
+    },
+    {
+      "id": "pm",
+      "name": "5 · Program Manager Workspace"
+    },
+    {
+      "id": "av",
+      "name": "6 · AV Tech Workspace"
+    }
+  ],
+  "title": "Moderator Portal Entry"
+}
