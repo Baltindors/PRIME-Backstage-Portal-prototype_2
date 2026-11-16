@@ -73,7 +73,15 @@ function createUuid(): string {
     return crypto.randomUUID()
   }
   const bytes = new Uint8Array(16)
-  crypto.getRandomValues(bytes)
+  if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
+    crypto.getRandomValues(bytes)
+  }
+  else {
+    const now = Date.now()
+    for (let index = 0; index < bytes.length; index += 1) {
+      bytes[index] = Math.floor(Math.random() * 256) ^ ((now >>> ((index % 4) * 8)) & 0xff)
+    }
+  }
   bytes[6] = (bytes[6] & 0x0f) | 0x40
   bytes[8] = (bytes[8] & 0x3f) | 0x80
   const hex = Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('')
@@ -239,7 +247,10 @@ function parseStored(raw: string): StoredTokens | null {
     let migrated = false
     for (const item of parsed) {
       const normalized = normalizeToken(item)
-      if (!normalized) return null
+      if (!normalized) {
+        migrated = true
+        continue
+      }
       tokens.push(normalized.token)
       if (normalized.migrated) migrated = true
     }
@@ -250,16 +261,25 @@ function parseStored(raw: string): StoredTokens | null {
   }
 }
 
-function readStored(): StoredTokens | null {
-  if (typeof localStorage === 'undefined') return null
+interface StoredRead {
+  tokens: DeviceToken[]
+  shouldPublish: boolean
+}
+
+function readStored(): StoredRead {
+  if (typeof localStorage === 'undefined') {
+    return { tokens: seedTokens(), shouldPublish: false }
+  }
   const raw = localStorage.getItem(STORAGE_KEY)
-  if (raw === null) return null
-  return parseStored(raw)
+  if (raw === null) return { tokens: seedTokens(), shouldPublish: true }
+  const parsed = parseStored(raw)
+  if (!parsed) return { tokens: seedTokens(), shouldPublish: true }
+  return { tokens: parsed.tokens, shouldPublish: parsed.migrated }
 }
 
 export const useAdminTokensStore = defineStore('adminTokens', () => {
   const stored = readStored()
-  const tokens = ref<DeviceToken[]>(stored?.tokens ?? seedTokens())
+  const tokens = ref<DeviceToken[]>(stored.tokens)
   const appBaseURL = useRuntimeConfig().app.baseURL
 
   function publish() {
@@ -333,12 +353,7 @@ export const useAdminTokensStore = defineStore('adminTokens', () => {
     })
   }
 
-  if (stored?.migrated) {
-    publish()
-  }
-  else if (typeof localStorage !== 'undefined' && localStorage.getItem(STORAGE_KEY) === null) {
-    publish()
-  }
+  if (stored.shouldPublish) publish()
 
   return {
     tokens,

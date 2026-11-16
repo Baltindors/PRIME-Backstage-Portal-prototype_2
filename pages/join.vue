@@ -2,9 +2,16 @@
 useHead({ title: 'Live Session Moderator Access · PRIME Backstage Portal' })
 
 const session = useSessionStore()
+const device = useModeratorDeviceStore()
 const code = ref('')
 const error = ref('')
 
+const authorized = computed(() => device.authorization.ok)
+const pairedLabel = computed(() => {
+  const result = device.authorization
+  if (!result.ok) return ''
+  return `${result.token.label} (${result.token.owner})`
+})
 const supportText = computed(() => error.value || 'Enter the code exactly as you received it.')
 
 function onCodeInput(event: Event) {
@@ -45,14 +52,18 @@ function onSubmit() {
           <span class="text-[11px] font-medium leading-[14px] tracking-[0.32em] text-muted">EDUCATION</span>
         </div>
         <h1 class="text-2xl font-normal leading-8 sm:text-[28px] sm:leading-9">
-          Live Session Moderator Access
+          {{ authorized ? 'Live Session Moderator Access' : 'Device Authorization Required' }}
         </h1>
         <p class="max-w-[400px] text-base leading-6 tracking-[0.03em] text-muted">
-          Enter the activity code for your live session to open the moderator interactive tools.
+          {{ authorized
+            ? 'Enter the activity code for your live session to open the moderator interactive tools.'
+            : 'Pair this device with a valid token before entering an activity code.' }}
         </p>
       </header>
 
-      <form class="flex flex-col gap-5" @submit.prevent="onSubmit">
+      <ModeratorDeviceGate v-if="!authorized" />
+
+      <form v-else class="flex flex-col gap-5" @submit.prevent="onSubmit">
         <div class="group relative">
           <label
             for="activity-code"
@@ -104,10 +115,17 @@ function onSubmit() {
             </svg>
           </span>
         </button>
+
+        <p class="text-center text-sm leading-5 tracking-[0.02em] text-subtle">
+          Paired device: {{ pairedLabel }}
+          <button type="button" class="ml-2 font-medium text-primary underline" @click="device.unpairDevice()">
+            Unpair
+          </button>
+        </p>
       </form>
     </main>
 
-    <p class="m-0 mt-6 text-center text-sm leading-5 tracking-[0.02em] text-subtle sm:mt-8">
+    <p v-if="authorized" class="m-0 mt-6 text-center text-sm leading-5 tracking-[0.02em] text-subtle sm:mt-8">
       Trouble with your code? Contact your PRIME session coordinator.
     </p>
   </div>

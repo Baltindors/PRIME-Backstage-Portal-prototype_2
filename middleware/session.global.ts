@@ -15,5 +15,10 @@ export default defineNuxtRouteMiddleware((to) => {
     if (!hasMode) return navigateTo('/')
     if (!hasCode) return navigateTo('/join')
     if (!hasRole) return navigateTo('/role-selection')
+    if (session.selectedRole?.id === 'moderator') {
+      const device = useModeratorDeviceStore()
+      device.refreshCheckedAt()
+      if (!device.isAuthorized) return navigateTo('/join')
+    }
   }
 })

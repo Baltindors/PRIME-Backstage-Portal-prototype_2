@@ -11,6 +11,13 @@ const statusFilter = ref<'all' | TokenDisplayStatus>('all')
 const issueOpen = ref(false)
 const shareId = ref<string | null>(null)
 
+watch(
+  () => shareId.value !== null && tokens.tokens.some(token => token.id === shareId.value),
+  (stillPresent) => {
+    if (shareId.value !== null && !stillPresent) shareId.value = null
+  },
+)
+
 const counts = computed(() => {
   let active = 0
   let expiring = 0

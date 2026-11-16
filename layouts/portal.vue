@@ -2,6 +2,17 @@
 import type { EventMode, RoleId, TabId } from '~/stores/session'
 
 const session = useSessionStore()
+const device = useModeratorDeviceStore()
+
+device.refreshCheckedAt()
+
+watch(
+  () => session.selectedRole?.id === 'moderator' && !device.isAuthorized,
+  (locked) => {
+    if (locked) void navigateTo('/join')
+  },
+  { immediate: true },
+)
 
 const modeMeta: Record<EventMode, { label: string, chip: string, icon: string }> = {
   individual: {
