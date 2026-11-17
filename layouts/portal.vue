@@ -4,6 +4,14 @@ import type { EventMode, RoleId, TabId } from '~/stores/session'
 const session = useSessionStore()
 const device = useModeratorDeviceStore()
 
+watch(
+  () => session.selectedRole?.id,
+  (roleId) => {
+    if (roleId === 'av-tech') useIpWhitelistStore()
+  },
+  { immediate: true },
+)
+
 device.refreshCheckedAt()
 
 watch(

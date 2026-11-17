@@ -19,6 +19,7 @@ export type TabId =
   | 'audience-analytics'
   | 'attendees'
   | 'event-notes'
+  | 'ip-whitelist'
 
 export type TabLayout = 'single' | 'split' | 'aside'
 
@@ -69,6 +70,7 @@ export const TABS: Record<TabId, TabConfig> = {
   'master-timers': { label: 'Master Stage Timers', view: { w: ['countdown'], layout: 'single' } },
   attendees: { label: 'Attendee Management', view: { w: ['roster'], layout: 'single' } },
   'event-notes': { label: 'Event Notes & Reporting', view: { w: ['notes'], layout: 'single' } },
+  'ip-whitelist': { label: 'IP Whitelist', view: { w: ['whitelist'], layout: 'single' } },
 }
 
 export const ROLES: Role[] = [
@@ -76,10 +78,10 @@ export const ROLES: Role[] = [
     id: 'av-tech',
     title: 'AV Tech / Stage Producer',
     short: 'AV Tech',
-    desc: 'Control the master stage timers, run polls and the leaderboard, and drive slides.',
-    toolsLine: 'Master Timers · Polling control · Q&A · Leaderboard · Slides · Flow · Chat',
-    toolCount: 7,
-    tabs: ['master-timers', 'poll-triggers', 'active-qa', 'leaderboard', 'slide-deck', 'program-flow', 'backstage-chat'],
+    desc: 'Control the master stage timers, run polls and the leaderboard, drive slides, and whitelist venue IPs.',
+    toolsLine: 'Master Timers · Polling control · Q&A · Leaderboard · Slides · Flow · Chat · IP Whitelist',
+    toolCount: 8,
+    tabs: ['master-timers', 'poll-triggers', 'active-qa', 'leaderboard', 'slide-deck', 'program-flow', 'backstage-chat', 'ip-whitelist'],
     def: 'master-timers',
     over: {},
     tabLabels: {

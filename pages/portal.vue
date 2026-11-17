@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import AudienceQA from '~/components/views/AV/AudienceQA.vue'
 import BackstageChat from '~/components/views/AV/BackstageChat.vue'
+import IpWhitelist from '~/components/views/AV/IpWhitelist.vue'
 import Leaderboard from '~/components/views/AV/Leaderboard.vue'
 import MasterTimers from '~/components/views/AV/MasterTimers.vue'
 import PollingControl from '~/components/views/AV/PollingControl.vue'
@@ -30,6 +31,7 @@ const session = useSessionStore()
     <SlideDeck v-else-if="session.activeTab === 'slide-deck'" />
     <ProgramFlow v-else-if="session.activeTab === 'program-flow'" />
     <BackstageChat v-else-if="session.activeTab === 'backstage-chat'" />
+    <IpWhitelist v-else-if="session.activeTab === 'ip-whitelist'" />
     <CategoriesGame v-else-if="session.activeTab === 'game-board'" />
   </div>
 </template>
