@@ -1,144 +1,125 @@
 # PRIME Backstage Portal — Project Context
 
-Living document for the prototype. Update this file after any architectural change, new page, or state modification.
+Living map for this prototype. Agents: read Invariants and Index, then only the section for the files you will change. Update that section after an architectural change, a new page, or a store behavior change. Leave validation and persistence algorithms in the store files.
 
-## Project Overview
+`nuxt md/` documents prime-synapse-site, a different app. Ignore it here.
 
-The PRIME Backstage Portal prototype is a frontend-only Nuxt 3 app that simulates live event management for PRIME Education. A staff member picks a ConnectED event mode, enters an activity code, chooses a role, and works inside a role-specific portal. There is no real backend. The goal is to exercise the backstage tools for different live-session modes before they are wired to production services.
+## Invariants
 
-## Tech Stack
+- Nuxt 3, `ssr: false`, strict TypeScript, Vue 3 `<script setup>`, Pinia, Tailwind. Static site via `npm run generate` → `.output/public`.
+- No server and no API client. Pages read and update Pinia. Mock data stays in stores.
+- Entry order is mode → paired device → activity code → role → portal. See Routes.
+- Accepted activity code: `123LV26`. Staff code: `4747`, required for AV Tech and Program Manager (also to leave the check-in kiosk).
+- Role ids, tab ids, labels, and default tabs live in `stores/session.ts`. The portal shell does not apply `TabView` `split` or `aside` layouts.
+- AV Tech, Moderator, and Faculty share one stage clock. Switching among those three keeps the running time, pause state, and live flag. A fresh AV Tech or Moderator login starts at 44:39. A fresh Faculty login starts at 20:00. Program Manager starts at 5:00. Only AV Tech’s Master Stage Timers tab changes that clock.
+- Polls, audience Q&A, and category clues are still local arrays inside their views. Move them into Pinia when those tools grow.
 
-- Nuxt 3 (`ssr: false`, strict TypeScript)
-- Vue 3 (Composition API, `<script setup>`)
-- Pinia (`@pinia/nuxt`)
-- Tailwind CSS (`@nuxtjs/tailwindcss`)
+## Index
 
-## Deployment
-
-The app is frontend-only and is deployed as a statically generated site. `npm run generate` writes the client bundle to `.output/public`. Nitro uses the `github-pages` preset so that directory is ready for GitHub Pages, including the SPA fallback.
-
-`.github/workflows/deploy.yml` deploys that output automatically. It runs on every push to `main` or `master`, and it can be started manually with `workflow_dispatch`. The workflow installs dependencies with `npm ci`, runs `npm run generate`, uploads `.output/public`, and publishes it with GitHub Pages.
-
-GitHub Pages project sites are served from `/<repository-name>/` rather than the domain root. `app.baseURL` in `nuxt.config.ts` is configured to `'/PRIME-Backstage-Portal-prototype_2/'` so that all static assets and router links include the subfolder prefix.
-
-## Architecture & Mocking Strategy
-
-The app relies on a simulated backend driven entirely by Pinia stores containing static mock data extracted from the initial HTML prototypes. Pages and components read and update that store state. They do not call a server.
-
-`stores/session.ts` (`useSessionStore`) owns the global session: event mode, activity code, selected role, user name, staff code, live flag, session timer, pause state, and active tab. The store persists to `sessionStorage` under `prime-portal-session` and restores on load. AV Tech, the Moderator, and Faculty share one stage countdown. Switching between those roles keeps the running time, the pause state, and the live flag. That clock starts at 44:39, and the AV Master Stage Timers tab is what changes it.
-
-`stores/slides.ts` (`useSlidesStore`) owns the live slide index for the shared deck. The same 45-slide presentation is shown in every event mode. Refreshing the page restores slide 12.
-
-`stores/programFlow.ts` (`useProgramFlowStore`) owns the shared cue-sheet reader: the current page and zoom. The same three-page run of show is shown in every event mode. Refreshing the page returns to page 1 at 100%.
-
-`stores/backstageChat.ts` (`useBackstageChatStore`) owns the shared crew thread: the transcript, the participant preview, and quick replies. The same chat is shown in every event mode. A sent message is kept until a full page reload restores the mock transcript.
-
-`stores/leaderboard.ts` (`useLeaderboardStore`) owns the mocked standings. Individual and Categories modes share the player board. Teams and Categories Teams share the team board. The view shows at most the top 50 scored entries. There is no leaderboard reset control. `resetFromGame(mode)` is the only way to clear a board, and it runs when that mode’s game is reset. Resetting a poll question does not clear scores. A full page reload restores the mock snapshot.
-
-`stores/attendees.ts` (`useAttendeesStore`) owns the Program Manager roster. It starts from a ten-person mock list. Sending a registration link adds an Invite Sent row. Checking someone in from the kiosk or the phone page adds a Registered row. The roster is kept in `localStorage` under `prime-portal-attendees`, so a check-in opened from the QR code in another tab appears on the live roster. Clearing that key restores the mock list on the next load.
-
-`stores/adminTokens.ts` (`useAdminTokensStore`) owns mocked device-access tokens for the PRIME Admin shell. A token has an id, a device label, a token string, an owner, an issuer, a stored status of active or revoked, a created time, and an expiration. An active token is shown as expired when `expiresAt` is in the past, and as expiring soon when it expires within 30 days. Those display buckets are separate from the stored status. Generating a token prepends an active row. The owner defaults to `LS`, the issuer is `LS`, and the expiration defaults to six months. Extending a token adds calendar months from its current expiration when that date is still ahead, or from now when it has already passed. Month math clamps the day, so January 31 plus one month lands on the last day of February. Revoked tokens cannot be extended. Revoking a token keeps the row and marks it revoked. New ids and token strings use `crypto.randomUUID()` when that API exists, `crypto.getRandomValues` when only that API exists, and a UUID v4 built from `Math.random()` and `Date.now()` when `crypto` is missing. Plain HTTP (for example a phone opening the dev server at `http://192.168.x.x`) is the case that skips `randomUUID`. The shareable pairing URL is `origin` plus `app.baseURL` plus `pair?token=`, with the base path normalized to one leading slash and no trailing slash, so the same link works locally and under the GitHub Pages subfolder. Copy uses the Clipboard API and falls back to `document.execCommand('copy')` when that API is missing or rejected. The list is kept in `localStorage` under `prime-admin-tokens`. Rows saved before owner, issuer, and expiration existed are backfilled (`owner` and `issuedBy` to `LS`, or `issuedBy` from the old `createdBy` value, and `expiresAt` to six months after `createdAt`) and written back. A stored value that is not valid JSON, or is not an array, is replaced with the eight seeded devices and written back, so the next reload does not read that corrupt payload again. A list that contains some malformed rows keeps the valid rows, drops the bad ones, and writes the cleaned list back. Removing that key, or calling `localStorage.clear()`, resets any other open admin tab to the eight seeded devices. A reload does the same when the key is missing. An empty stored list stays empty. The Token Dashboard at `/admin/tokens` lists every admin’s tokens, can issue a token for any admin, and can share or revoke it. If a shared token disappears from a cross-tab reset, the open share dialog closes. The Token Generator at `/admin/tokens/generate` is limited to tokens owned by `LS` and opens with that user’s first token selected. If the selected token disappears, the generator selects the first remaining `LS` token. Admin does not call a server. A pairing link or QR code from these tools can sign the current browser into the Moderator entry screen.
-
-`stores/moderatorDevice.ts` (`useModeratorDeviceStore`) remembers the token paired on this browser in `localStorage` under `prime-moderator-device-token`. A value is accepted only when it matches a token whose stored status is active and whose `expiresAt` is still ahead; an expiring-soon token still counts as valid. Anything else reports `missing`, `not-found`, `revoked`, or `expired`, and a failure does not overwrite the saved token. Pairing accepts a raw token or a URL with a `token` query parameter. Unpair removes the key. Another tab pairing or unpairing updates this one through the `storage` event. Returning to the tab rechecks expiration, and a visible tab rechecks every 10 seconds so a token that passes `expiresAt` in the foreground locks the device out without a tab switch. `/pair` uses a query `token` to switch this browser to that device when the token is valid. It refreshes the expiration clock before it reads authorization. If this browser is still authorized after that attempt — no token in the link, or a rejected token that leaves the current pairing in place — it opens `/join`. A token that expired during the previous 10 seconds stays on `/pair` with the expiration reason. The card stays on screen and reads “Authorizing device...” until that navigation finishes. A failure card is shown only when the device is not authorized. `/join` hides the activity-code form until this device is paired. The unauthorized card can scan a QR code with the camera and `BarcodeDetector`, simulate a scan with the first active token, or accept a pasted token or pairing link. A paired card shows the device label and owner and can unpair. There is no server call.
-
-`stores/ipWhitelist.ts` (`useIpWhitelistStore`) owns the AV Tech venue whitelist. Each row has an id, an activity code, a normalized value, a type of single, CIDR, or range, an optional location note, the person who added it, a created time, and an expiration exactly 48 hours later. Ids use `crypto.randomUUID()` when that API exists, `crypto.getRandomValues` when only that API exists, and a UUID v4 built from `Math.random()` and `Date.now()` when `crypto` is missing. One submission can contain many values, split on newlines, commas, or semicolons. Each token is checked on its own: IPv4, IPv4 CIDR (`0–32`), an IPv4 hyphen range whose end is not before the start, IPv6, and IPv6 CIDR (`0–128`). IPv6 is stored in lowercase compressed form, so an expanded address matches the compressed one. CIDR host bits are cleared on save and again when a stored list is read, so `203.0.113.5/24` and `203.0.113.99/24` are both `203.0.113.0/24`, and `2001:db8::5/64` is `2001:db8::/64`. Rows that share an activity code and that canonical value collapse on read: the later expiration is kept, a blank label is filled from the dropped row, and the cleaned list is written back. The portal layout starts this store as soon as an AV Tech opens `/portal`, so that cleanup does not wait for the IP Whitelist tab. IPv6 hyphen ranges are rejected. Valid rows are saved even when other tokens in the same paste fail. A value already active for the same activity code counts as a duplicate; a new non-empty note updates that row’s label and leaves the 48-hour clock alone. The list is kept in `localStorage` under `prime-portal-ip-whitelist`. The first load, and any load that finds missing or corrupt JSON, writes three seed rows for `123LV26` (a single IP, a CIDR block, and a range, each with time still left). A stored empty array stays empty. Rows that are missing required fields are dropped and the cleaned list is written back. Expired rows are removed on that first read, when the tab becomes visible, and every 20 seconds while the tab is in the foreground. The interval and the `storage` and `visibilitychange` listeners are kept on `globalThis` and cleared before a development reload so those timers do not stack. Removing the key, or calling `localStorage.clear()`, resets any other open tab to the three seed rows. There is no server call.
-
-`stores/eventNotes.ts` (`useEventNotesStore`) owns Program Manager session notes. It starts from three seeded observations. Edits are kept in `localStorage` under `prime-portal-event-notes`, including the timestamp of the last save. Quick-add tags append a timestamped line that uses the signed-in name. Beautify with AI rewrites the current notes in the browser into a report: a summary, sections for technical issues, engagement, and faculty feedback, and any follow-ups. There is no network call. Editing the raw notes clears that report. A full page reload restores the saved notes and drops the generated report.
-
-Accepted mock credentials:
-
-- Activity code: `123LV26`
-- Staff code: `4747` (required for AV Tech and Program Manager)
-
-`middleware/session.global.ts` enforces the entry order:
-
-1. `/` — select an event mode
-2. `/join` — enter the activity code, after this browser has a valid device token
-3. `/role-selection` — choose a role, enter a name, and enter the staff code when the role requires it
-4. `/portal` — role tools, using `layouts/portal.vue`
-
-`/pair`, `/admin`, and `/walk-in` are outside that redirect chain. A Moderator on `/portal` whose device token is missing, expired, or revoked is sent back to `/join`. That check refreshes the device clock before it reads authorization, so a route change does not reuse a stale expiration result. The portal layout refreshes that clock once when it loads and watches the same check, so a revoke, an unpair, or a foreground expiration locks the Moderator out without a reload. The 10-second timer is cleared before a development reload starts another one. Other roles stay on `/portal`. The session itself is kept.
-
-Several tool views still hold their own static arrays (polls, Q&A, category clues). That data is mocked and should move into Pinia stores as those tools are extended. Do not introduce a real API client for prototype data.
-
-## Current State
-
-### Built
-
-- Nuxt 3 app shell with Pinia, Tailwind, and strict TypeScript (`nuxt.config.ts`, `app.vue`, `tailwind.config.ts`, `assets/css/main.css`). Static generation targets `.output/public` and deploys through `.github/workflows/deploy.yml`.
-- Pinia session store with typed roles, tabs, event modes, validation, timer actions, logout, and session persistence.
-- Pinia leaderboard store with the individual player board and the team board. The view is capped at the top 50, and scores clear only through `resetFromGame`.
-- Pinia slides store. The Slide Deck tab shows one 45-slide presentation in every event mode, opening on slide 12. The slide keeps a 747:420 frame and grows to the widest size that fits the deck stage.
-- Pinia program-flow store. Program Flow is a three-page PDF reader for the same cue sheet in every event mode.
-- Pinia backstage-chat store. Backstage Chat shows one crew thread in every event mode: participant preview, role-colored bubbles, the new-messages divider, quick replies, and a composer. The signed-in name and role appear on the “You” chip. Messages the signed-in person sends stay on that shared thread.
-- Pinia IP whitelist store. The IP Whitelist tab is on AV Tech in every ConnectED mode. Entries stay in `localStorage` under `prime-portal-ip-whitelist` and expire 48 hours after submission.
-- Homepage (`pages/index.vue`) with four event-mode cards (`components/EventModeCard.vue`). Individual, Teams, Categories, and Categories Teams each start a session.
-- Activity code entry (`pages/join.vue`). The activity-code form is shown after this browser is paired. Otherwise the same card asks for a QR scan, a simulated scan, or a pasted device token.
-- Device pairing (`pages/pair.vue`). A pairing URL saves a valid token and continues to `/join`. An invalid token stays on the page with the reason.
-- Role selection (`pages/role-selection.vue`, `components/RoleCard.vue`) with name and staff-code gating.
-- Shared portal shell (`layouts/portal.vue`), used by every role after onboarding: mode chip, activity code, role switcher, leave session, live countdown, and that role’s tab bar.
-- PRIME Admin shell (`layouts/admin.vue`), separate from the event session. The sidebar uses the PRIME admin logo. `/admin` shows the home heading. The sidebar lists Program Management, Marketing, Outcomes, Reporting, Tools, and User Manager. Tools includes two real links, Token Dashboard (`/admin/tokens`) and Token Generator (`/admin/tokens/generate`). Article Uploader, SynopsiMedEd Feeds, and the other section children are labels only. This prototype does not gate those two tools with permissions. The header search field is visual. Create opens the generator. The dashboard is the full-service view: KPI counts, filters, and every stored token, with issue, share, extend, and revoke actions for any admin. The generator is the self-service view for `LS`: a split list and detail pane for that user’s tokens only, opening on the first one. Sharing shows a QR code from `components/QrCode.vue` (the existing `qrcode` package), the pairing URL, and the raw token string. Admin routes are outside the session middleware.
-- Portal page (`pages/portal.vue`) renders the active tab.
-
-AV Tech tabs and the views that render them:
-
-| Tab | View |
+| Change this | Read |
 | --- | --- |
-| Master Stage Timers | `components/views/AV/MasterTimers.vue` |
-| Polling & Gamification | `components/views/AV/PollingControl.vue` |
-| Audience Q&A | `components/views/AV/AudienceQA.vue` |
-| Leaderboard | `components/views/AV/Leaderboard.vue` |
-| Slide Deck | `components/views/AV/SlideDeck.vue` |
-| Program Flow | `components/views/AV/ProgramFlow.vue` |
-| Backstage Chat | `components/views/AV/BackstageChat.vue` |
-| IP Whitelist | `components/views/AV/IpWhitelist.vue` |
+| Routes, layouts, middleware, pairing | Routes |
+| Roles, tabs, timer, portal shell | Roles and tabs |
+| Any `stores/*.ts` or a tool that reads one | Stores |
+| A mode-specific behavior that is not built yet | Not built |
+| Generate, base URL, GitHub Pages | Deploy |
+| Where to put a file | Code map |
 
-The leaderboard matches the individual prototype: a top-three podium and a two-column list of the remaining ranks (`components/LeaderboardPodiumCard.vue`, `components/LeaderboardStandingRow.vue`). Individual mode reads “Top players” and is capped at 50 of the 214 scored players. Teams mode reads “Top teams” and ranks the nine onsite and virtual teams. Categories uses the player board. Categories Teams uses the team board.
+## Routes
 
-The Moderator uses the same Polling & Gamification, Audience Q&A, Leaderboard, Slide Deck, Program Flow, and Backstage Chat tabs as AV Tech, in that order, without the Master Stage Timers control or the IP Whitelist. `PollingControl.vue` renders that shared polling tab and already branches on Teams versus Categories modes. Faculty uses Faculty Q&A (`AudienceQA.vue`), a view-only poll preview (`components/views/Faculty/FacultyPolls.vue`), and the same Slide Deck, Program Flow, and Backstage Chat views. On tablet and desktop the poll list takes one third of the row and the question takes the other two thirds. On a phone the list opens as a menu from the left. `components/views/CategoriesGame.vue` renders the `game-board` tab. No current role includes that tab.
+`middleware/session.global.ts` redirects until mode, activity code, and role exist. `/pair`, `/admin`, and `/walk-in` sit outside that chain.
 
-CME Program Manager tabs and the views that render them. Attendee Management opens by default. Backstage Chat shows a red badge of 3. This same set is used in every event mode.
+| Path | Page | Layout | Gate |
+| --- | --- | --- | --- |
+| `/` | `pages/index.vue` | default | Four event-mode cards. Choosing one calls `setEventMode`. |
+| `/pair` | `pages/pair.vue` | default | `?token=` pairs this browser, then opens `/join` when the token is valid. Invalid token stays here with the reason. |
+| `/join` | `pages/join.vue` | default | Needs a mode. Activity-code form only after this browser holds a valid device token. Otherwise scan, simulate, or paste a token. |
+| `/role-selection` | `pages/role-selection.vue` | default | Needs mode and activity code. Name plus staff code when the role requires it. |
+| `/portal` | `pages/portal.vue` | `layouts/portal.vue` | Needs mode, code, and role. A Moderator without a valid device token returns to `/join`. Other roles stay. Logout clears the session only. |
+| `/walk-in` | `pages/walk-in.vue` | default | Phone check-in from the kiosk QR. Writes the attendee store. |
+| `/admin` | `pages/admin/index.vue` | `layouts/admin.vue` | No session and no permission gate. |
+| `/admin/tokens` | `pages/admin/tokens/index.vue` | admin | Token Dashboard: every admin’s tokens. |
+| `/admin/tokens/generate` | `pages/admin/tokens/generate.vue` | admin | Token Generator: tokens owned by `LS` only. |
 
-| Tab | View |
-| --- | --- |
-| Attendee Management | `components/views/PM/AttendeeManagement.vue` — roster, quick registration, and full-screen kiosk |
-| Event Notes & Reporting | `components/views/PM/EventNotes.vue` — session notes (`SessionNotes.vue`), Beautify with AI, and the end-of-program package (`ProgramReport.vue`) |
-| Faculty Q&A (View) | `components/views/AV/AudienceQA.vue` with `variant="view"` |
-| Polling Questions (View) | `components/views/Faculty/FacultyPolls.vue` |
-| Slide Deck | `components/views/AV/SlideDeck.vue` |
-| Program Flow | `components/views/AV/ProgramFlow.vue` |
-| Backstage Chat | `components/views/AV/BackstageChat.vue` |
+`layouts/portal.vue` is the signed-in shell: mode chip, activity code, role switcher, leave session, live countdown, and that role’s tab bar. `pages/portal.vue` is the only tab switch; add a branch there when a tab id needs a view.
 
-### Pending ConnectED event modes
+`layouts/admin.vue` is a separate shell. Sidebar: Program Management, Marketing, Outcomes, Reporting, Tools, User Manager. Only Token Dashboard and Token Generator are links. Other children are labels. Header search is visual. Create opens the generator.
 
-All four ConnectED modes can be selected from the homepage and continue through the activity code, role selection, and the portal. Mode-specific play is not finished:
+## Roles and tabs
 
-- **Individual** — individual polling is still local mock state in the poll view. The player leaderboard is in the leaderboard store.
-- **Teams** — polling knows the mode is Teams, and the leaderboard ranks teams. Team chat and the Moderator Teams Monitor are not built.
-- **Categories** — the category board component exists, but buzz-in scoring is not wired. The leaderboard for this mode currently reuses the individual player board.
-- **Categories Teams** — team vote, the all-teams answer step, and the 50% correct rule are not built. The leaderboard currently reuses the team board.
+Source of truth: `ROLES` and `TABS` in `stores/session.ts`. Labels below are the role overrides, not the generic `TABS` label.
 
-### Pending roles
+| Role | Default tab | Tabs, in order | View |
+| --- | --- | --- | --- |
+| AV Tech `av-tech` | Master Stage Timers | Master Stage Timers, Polling & Gamification, Audience Q&A, Leaderboard, Slide Deck, Program Flow, Backstage Chat, IP Whitelist | `AV/MasterTimers`, `AV/PollingControl`, `AV/AudienceQA`, `AV/Leaderboard`, `AV/SlideDeck`, `AV/ProgramFlow`, `AV/BackstageChat`, `AV/IpWhitelist` |
+| Moderator `moderator` | Audience Q&A | Same as AV Tech without Master Stage Timers and without IP Whitelist | Same AV views. Header clock is the shared stage timer. |
+| Faculty `faculty` | Faculty Q&A | Faculty Q&A, Polling Questions (View), Slide Deck, Program Flow, Backstage Chat | `AudienceQA` `variant="faculty"`, `Faculty/FacultyPolls`, then the same Slide Deck, Program Flow, and Backstage Chat. Polls have no launch, stop, or reset. On tablet and desktop the poll list is one third and the question is two thirds. On a phone the list is a left menu. |
+| Program Manager `program-manager` | Attendee Management | Attendee Management, Event Notes & Reporting, Faculty Q&A (View), Polling Questions (View), Slide Deck, Program Flow, Backstage Chat | `PM/AttendeeManagement`, `PM/EventNotes`, `AudienceQA` `variant="view"`, `Faculty/FacultyPolls`, then the shared Slide Deck, Program Flow, and Backstage Chat. Same set in every event mode. |
 
-Role definitions, default tabs, labels, and layout overrides live in `stores/session.ts`. The portal does not yet apply `TabView` split or aside layouts.
+Backstage Chat shows a badge of 3 on every role. `CategoriesGame.vue` renders `game-board`, and `PollingControl.vue` also renders `trivia-polls`. No current role includes those tab ids.
 
-- **AV Tech** — tab set and views above are in place, including IP Whitelist. Timer controls write to the session store. Whitelist edits write to `stores/ipWhitelist.ts`. Moderator, Faculty, and Program Manager do not have that tab.
-- **Moderator** — Audience Q&A, Polling & Gamification, Leaderboard, Slide Deck, Program Flow, and Backstage Chat are the same tabs and views as AV Tech. The header countdown stays on the AV stage timer. The device must hold a valid token before the activity code and again while this role is on `/portal`. Teams Monitor is not built.
-- **Faculty** — Faculty Q&A, view-only Polling Questions, Slide Deck, Program Flow, and Backstage Chat. Slide Deck, Program Flow, and Backstage Chat are the same views as AV Tech and the Moderator. Polling has no launch, stop, or reset controls. The header countdown uses the same stage timer. Rationale & Citations and Speaker Timer still have no views.
-- **Program Manager** — Attendee Management is the live roster and quick registration. Full-screen self check-in is a split screen: the walk-in form on one side, and a QR code for phone check-in on the other. Leaving the kiosk requires staff code `4747`. Phone check-in is `pages/walk-in.vue`. Event Notes & Reporting is the session log and the end-of-program package. Notes autosave locally. Quick add inserts a Faculty feedback, Tech issue, or Engagement line. Beautify with AI turns the raw log into the report version included when Event Notes is checked. The package itself is a simulated send to one email address. Faculty Q&A is view-only. Polling Questions, Slide Deck, Program Flow, and Backstage Chat reuse the existing views. Audience Analytics is not on this role.
+Defined tab ids with no role and no special portal branch: `rationale`, `speaker-timer`, `audience-analytics`.
 
-## Key Terminology
+Event modes (`EventMode`), all selectable on `/`:
 
-### Roles
+| Id | Name | Badge | Built | Not built |
+| --- | --- | --- | --- | --- |
+| `individual` | ConnectED Individual | Standard | Player leaderboard | Individual polling is still local state in the poll view |
+| `teams` | ConnectED Teams | Hybrid | Poll view branches on Teams; team leaderboard | Team chat, Moderator Teams Monitor |
+| `categories` | ConnectED Categories – Individuals | Buzzer | `CategoriesGame.vue` exists; leaderboard reuses the player board | Buzz-in scoring. No role shows the game board |
+| `catteams` | ConnectED Categories Teams | Team vote | Leaderboard reuses the team board | Team vote, all-teams answer step, 50% correct rule |
 
-- **AV Tech** (`av-tech`) — AV Tech / Stage Producer. Runs the master stage timers, polling, audience Q&A, the leaderboard, slides, program flow, backstage chat, and the venue IP whitelist. Whitelisted IPs and ranges expire 48 hours after submission.
-- **Moderator** (`moderator`) — Session Moderator. Uses the same audience Q&A, polling, leaderboard, slides, program flow, and backstage chat as AV Tech. The header countdown follows the AV stage timer. Teams mode adds a Teams Monitor.
-- **Faculty** (`faculty`) — Medical Faculty / Speaker. Answers faculty Q&A, reviews polling questions in view-only mode, and uses the same slide deck, program flow, backstage chat, and stage countdown as AV Tech and the Moderator.
-- **Program Manager** (`program-manager`) — CME Program Manager. Opens on Attendee Management (roster, registration, and kiosk check-in), then Event Notes & Reporting, view-only Faculty Q&A, view-only Polling Questions, and the same Slide Deck, Program Flow, and Backstage Chat as AV Tech.
+Leaderboard copy: Individual and Categories say “Top players” (top 50 of the scored players). Teams and Categories Teams say “Top teams”.
 
-### Event modes
+## Stores
 
-- **Individual** (`individual`) — ConnectED Individual. Each attendee answers and scores alone. Standard badge.
-- **Teams** (`teams`) — ConnectED Teams. Attendees join teams, chat privately, and answer together. Hybrid badge. Adds team polls, a team leaderboard, and the Moderator Teams Monitor.
-- **Categories** (`categories`) — ConnectED Categories – Individuals. Jeopardy-style board. Players pick a category and buzz in. Wrong answers lose points. Buzzer badge.
-- **Categories Teams** (`catteams`) — ConnectED Categories Teams. The controlling team votes on the category and value. Every team answers, and the 50% correct rule applies. Team vote badge.
+Shared session facts, mocked records, and anything another tab or role must see belong here. A draft that has not been submitted can stay in the component.
+
+| Store | Persists | Owns | Reset |
+| --- | --- | --- | --- |
+| `useSessionStore` `stores/session.ts` | `sessionStorage` `prime-portal-session` | Event mode, activity code, role, name, staff code, live flag, timer, pause, active tab | `logout()` removes the key. Reload restores a valid session. |
+| `useSlidesStore` | memory | One 45-slide deck for every mode. Opens on slide 12. Frame is 747:420 and grows to the stage. | Reload returns to slide 12. |
+| `useProgramFlowStore` | memory | One 3-page cue sheet for every mode. Page and zoom. | Reload returns to page 1 at 100%. |
+| `useBackstageChatStore` | memory | One crew thread for every mode: preview, role-colored bubbles, new-messages divider, quick replies, composer. Sent messages use the signed-in name and role. | Full reload restores the mock transcript. |
+| `useLeaderboardStore` | memory | Player board for Individual and Categories. Team board for Teams and Categories Teams. View caps at the top 50. | `resetFromGame(mode)` only, and only when that mode’s game is reset. Resetting a poll does not clear scores. Reload restores the mock snapshot. |
+| `useAttendeesStore` | `localStorage` `prime-portal-attendees` | Program Manager roster. Starts from ten people. A registration link adds Invite Sent. Kiosk or `/walk-in` adds Registered. | Delete the key to restore the seed on the next load. Other tabs see writes through `storage`. |
+| `useEventNotesStore` | `localStorage` `prime-portal-event-notes` | Three seeded notes, last-saved time, quick-add lines (signed-in name), and an in-browser report from `utils/beautifyNotes.ts` (summary, technical issues, engagement, faculty feedback, follow-ups). | Editing the raw notes clears the report. Reload keeps the notes and drops the report. No network call. The end-of-program package is a simulated send to one email address. |
+| `useAdminTokensStore` | `localStorage` `prime-admin-tokens` | Device tokens: id, device label, token string, owner, issuer, stored status `active` or `revoked`, created time, expiration. Display buckets (expired, expiring soon = within 30 days) are separate from stored status. Owner and issuer default to `LS`. New tokens last six months. Extend adds calendar months from the current expiration, or from now if it has passed. Revoked tokens cannot be extended. | Missing or corrupt JSON is replaced with eight seed devices. An empty list stays empty. Malformed rows are dropped. `localStorage.clear()` or removing the key resets other admin tabs to the seed. Dashboard issues, shares, extends, and revokes any admin’s token. Generator is `LS` only and selects another `LS` token if the current one disappears. A share dialog closes if that token disappears. Pairing URL is `origin` + `app.baseURL` + `pair?token=`. |
+| `useModeratorDeviceStore` | `localStorage` `prime-moderator-device-token` | Token paired on this browser. Valid only when stored status is active and `expiresAt` is still ahead. Expiring-soon still counts. Failures: `missing`, `not-found`, `revoked`, `expired`. A failure does not replace the saved token. Accepts a raw token or a URL with `token`. | Unpair removes the key. Other tabs follow `storage`. A visible tab rechecks about every 10 seconds. `/pair` and the Moderator `/portal` check refresh that clock before reading authorization. |
+| `useIpWhitelistStore` | `localStorage` `prime-portal-ip-whitelist` | AV Tech only, every ConnectED mode. Rows: id, activity code, normalized value, type `single` \| `CIDR` \| `range`, optional location, who added it, created time, expiration 48 hours later. One paste may mix newlines, commas, and semicolons. Valid rows save even when other tokens in the paste fail. IPv4, IPv4 CIDR, IPv4 ranges, IPv6, and IPv6 CIDR are accepted. IPv6 hyphen ranges are rejected. | First load, or corrupt JSON, writes three unexpired seed rows for `123LV26`. An empty array stays empty. Expired rows drop on read, when the tab becomes visible, and about every 20 seconds in the foreground. The portal layout starts this store when an AV Tech opens `/portal`. Removing the key resets other tabs to the three seeds. |
+
+Read the store before changing its validation, canonical form, or migration of old rows. Those rules are the spec.
+
+## Not built
+
+- Teams: team chat and the Moderator Teams Monitor.
+- Categories: buzz-in scoring. The board component is unused by every role.
+- Categories Teams: team vote, the all-teams answer step, and the 50% correct rule.
+- Faculty: Rationale & Citations, Speaker Timer.
+- Program Manager: Audience Analytics.
+- Portal layouts: `TabView` `split` and `aside` are unused.
+
+## Deploy
+
+`.github/workflows/deploy.yml` runs on push to `main` or `master`, and on `workflow_dispatch`. It runs `npm ci`, `npm run generate`, and publishes `.output/public` with the `github-pages` Nitro preset.
+
+`app.baseURL` in `nuxt.config.ts` is `/PRIME-Backstage-Portal-prototype_2/`. GitHub Pages serves the site from that subfolder. Pairing links must keep that prefix.
+
+## Code map
+
+```
+pages/                 routes only
+layouts/portal.vue     signed-in shell
+layouts/admin.vue      admin shell
+middleware/session.global.ts
+stores/                Pinia. Mock backend lives here.
+components/views/AV/   shared stage tools
+components/views/Faculty/
+components/views/PM/
+components/views/CategoriesGame.vue
+components/            shared widgets (QR, role card, leaderboard rows)
+utils/beautifyNotes.ts in-browser notes report
+assets/css/main.css    Tailwind entry. Do not add a parallel stylesheet.
+```
+
+Components and composables are auto-imported. Import types explicitly.
